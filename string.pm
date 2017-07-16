@@ -54,6 +54,7 @@ sub isEqual {
 
 sub slice {
     my ($self,$start,$end) = @_;
+    return $self->substr( $start , $end );
 }
 
 sub substr {
@@ -79,8 +80,11 @@ sub charCodeAt {
     return ord( $self->charAt( $index ) );
 }
 
-sub endsWith {
-    my ($self,$strSeeked) = @_;
+sub match {
+    my ($self,$pattern) = @_; 
+    return 0 if !defined $pattern;
+    my $ret = $self->{_value} =~ m/$pattern/;
+    return $ret || 0;
 }
 
 sub concat {
@@ -94,7 +98,15 @@ sub concat {
 }
 
 sub contains {
-    my ($self,$str) = @_;
+    my ($self,$substring) = @_;
+    return 0 if !defined $substring;
+    return index($self->{_value}, $substring) != -1;
+}
+
+sub containsRight {
+    my ($self,$substring) = @_;
+    return 0 if !defined $substring;
+    return rindex($self->{_value}, $substring) != -1;
 }
 
 sub split {
@@ -153,14 +165,6 @@ sub trimLeft {
     my ($self) = @_;
     $self->{_value} =~ s/^\s+//;
     return $self;
-}
-
-sub padEnd {
-
-}
-
-sub padStart {
-
 }
 
 sub isString {
