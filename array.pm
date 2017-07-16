@@ -311,6 +311,11 @@ sub forEach {
     return $self;
 }
 
+sub toArray {
+    my ($self) = @_;
+    return @{$self->{value}};
+}
+
 sub isArray {
     my ($str) = @_; 
     my $i = 0;
