@@ -15,6 +15,13 @@ sub new {
     },ref($class) || $class);
 }
 
+sub clear {
+    my ($self) = @_;
+    my @Arr = ();
+    $self->{value} = \@Arr;
+    return $self;
+}
+
 sub freeze {
     my ($self) = @_;
     $self->{freezed} = 1;
@@ -65,11 +72,35 @@ sub indexOf {
     my ($self,$value) = @_;
     die "undefined argument value" if !defined $value;
     my $index = -1;
-    my $ref = ref($value) || ref(\$value);
+    my $i = 0;
     foreach(@{$self->{value}}) {
-
+        return $i if $_ eq $value;
+        $i++;
     }
     return $index;
+}
+
+sub lastIndexOf {
+    my ($self,$value) = @_;
+    die "undefined argument value" if !defined $value;
+    my $index = -1;
+    my $i = 0;
+    foreach(@{$self->{value}}) {
+        if($_ eq $value) {
+            $index = $i;
+        }
+        $i++;
+    }
+    return $index;
+}
+
+sub includes {
+    my ($self,$value) = @_;
+    die "undefined value" if !defined $value;
+    foreach(@{$self->{value}}) {
+        return 1 if $_ eq $value;
+    }
+    return 0;
 }
 
 sub pop {
@@ -97,22 +128,147 @@ sub reverse {
     return $self;
 }
 
+sub clone {
+    my ($self) = @_;
+    return $self->slice(0,$self->size() - 1);
+}
+
 sub slice {
-    my ($self,$offset,$length) = @_;
-    if(!defined $length) {
-        $length = 1;
+    my ($self,$start,$end) = @_;
+    if(!defined $start) {
+        $start = 0;
+    }
+    if(!defined $end) {
+        $end = $self->size() - 1;
     }
     my $newArray = stdlib::array->new(); 
-    
+    my $i = 0;
+    foreach(@{$self->{value}}) {
+        if($i < $start) {
+            $i++;
+            next;
+        }
+        $newArray->push($_);
+        last if $i == $end;
+        $i++;
+    }
     return $newArray;
+}
+
+sub splice {
+    my ($self,$index,$nbElements) = @_; 
+    die "index not defined" if !defined $index; 
+    if(!defined $nbElements) {
+        $nbElements = 1;
+    }
+    splice(@{$self->{value}},$index,$nbElements);
+    return $self;
+}
+
+sub fill {
+    my ($self,$value,$start,$end) = @_; 
+    die "undefined value" if !defined $value;
+    if(!defined $start) {
+        $start = 0;
+    }
+    if(!defined $end) {
+        $end = $self->size() - 1;
+    }
+    my $i = 0;
+    foreach(@{$self->{value}}) {
+        if($i < $start) {
+            $i++;
+            next;
+        }
+        $self->{value}[$i] = $value;
+        last if $i == $end;
+        $i++;
+    }
+    return $self;
+}
+
+sub find {
+    my ($self,$fn) = @_;
+    die "Undefined callback (fn) for find method!" if !defined $fn;
+    my $ref = ref($fn) || ref(\$fn);
+    return if $ref ne "CODE";
+    return if $self->size() == 0;
+    foreach(@{$self->{value}}) {
+        return $_ if $fn->($_);
+    }
+    return undef;
+}
+
+sub findIndex {
+    my ($self,$fn) = @_;
+    die "Undefined callback (fn) for findIndex method!" if !defined $fn;
+    my $ref = ref($fn) || ref(\$fn);
+    return if $ref ne "CODE";
+    my $indexArr = stdlib::array->new;
+    my $i = 0;
+    foreach(@{$self->{value}}) {
+        my $ret = $fn->($_);
+        $indexArr->push($i) if $ret;
+        $i++;
+    }
+    return $indexArr;
 }
 
 sub sort {
     my ($self,$fn) = @_;
+    die "Undefined callback (fn) for sort method!" if !defined $fn;
+    my $ref = ref($fn) || ref(\$fn);
+    return if $ref ne "CODE";
+    my @sortedArray = sort $fn @{$self->{value}};
+    $self->{value} = \@sortedArray;
+    return $self;
 }
 
 sub reduce {
     my ($self,$fn,$initialValue) = @_;
+    die "Undefined callback (fn) for reduce method!" if !defined $fn;
+    my $ref = ref($fn) || ref(\$fn);
+    return if $ref ne "CODE";
+    return if $self->size() == 0;
+    if(!defined $initialValue) {
+        $initialValue = $self->get(0);
+    }
+    foreach(@{$self->{value}}) {
+        $initialValue = $fn->($initialValue,$_);
+        last if !defined $initialValue;
+    }
+    return $initialValue;
+}
+
+sub reduceRight {
+    my ($self,$fn,$initialValue) = @_;
+    die "Undefined callback (fn) for reduceRight method!" if !defined $fn;
+    my $ref = ref($fn) || ref(\$fn);
+    return if $ref ne "CODE";
+    my $arrSize = $self->size();
+    return if $arrSize == 0;
+    my $i = $arrSize - 1;
+    if(!defined $initialValue) {
+        $initialValue = $self->get($i);
+    }
+    while($i >= 0) {
+        $initialValue = $fn->($initialValue,$self->get($i));
+        last if !defined $initialValue;
+        $i--;
+    }
+    return $initialValue;
+}
+
+sub some {
+    my ($self,$fn) = @_;
+    die "Undefined callback (fn) for map method!" if !defined $fn;
+    my $ref = ref($fn) || ref(\$fn);
+    return if $ref ne "CODE";
+    return if $self->size() == 0;
+    foreach(@{$self->{value}}) {
+        return 1 if $fn->($_);
+    }
+    return 0;
 }
 
 sub map {
