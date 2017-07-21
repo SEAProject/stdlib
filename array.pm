@@ -1,16 +1,23 @@
 package stdlib::array;
 use strict;
 use warnings;
+use stdlib::util;
+use stdlib::integer;
+use stdlib::boolean;
+use stdlib::string;
 require Exporter;
 use vars qw(@EXPORT @ISA);
 
 @ISA = qw(Exporter);
 @EXPORT = qw(isArray);
 
+my $refName = 'stdlib::array';
+our $directUpdate = stdlib::boolean->new(1);
+
 sub new {
     my ($class,@Array) = @_;
     return bless({ 
-        freezed => 0,
+        freezed => stdlib::boolean->new(0),
         value => \@Array
     },ref($class) || $class);
 }
@@ -24,21 +31,21 @@ sub clear {
 
 sub freeze {
     my ($self) = @_;
-    $self->{freezed} = 1;
+    $self->{freezed}->updateValue(1);
     return $self;
 }
 
 sub size {
     my ($self) = @_;
-    return scalar @{$self->{value}};
+    return stdlib::integer->new(scalar @{$self->{value}});
 }
 
 sub push {
     my ($self,$value) = @_;
-    return if $self->{freezed};
-    return if !defined $value;
+    die "Not possible to push new value in a freezed Array" if $self->{freezed}->valueOf() == 1;
+    die "Not possible to push undefined value!" if !defined $value;
     my $index = push(@{$self->{value}},$value);
-    return $index;
+    return stdlib::integer->new($index);
 }
 
 sub concat {
@@ -52,6 +59,7 @@ sub join {
     if(!defined $separator) {
         $separator = ',';
     }
+    $separator = ifStd($separator,'stdlib::string');
     my $ref = ref($separator) || ref(\$separator);
     return if $ref ne "SCALAR";
     my $str = '';
@@ -59,22 +67,33 @@ sub join {
         $str.="${v}${separator}";
     }
     chop $str;
-    return $str;
+    return stdlib::string->new($str);
 }
 
 sub get {
     my ($self,$index) = @_;
     die "undefined argument index" if !defined $index;
+    $index = ifStd($index,'stdlib::integer');
     return $self->{value}[$index];
+}
+
+sub first {
+    my ($self) = @_;
+    return $self->get(0);
+}
+
+sub last {
+    my ($self) = @_;
+    return $self->get($self->size->valueOf() - 1);
 }
 
 sub indexOf {
     my ($self,$value) = @_;
     die "undefined argument value" if !defined $value;
-    my $index = -1;
+    my $index = stdlib::integer->new(-1);
     my $i = 0;
     foreach(@{$self->{value}}) {
-        return $i if $_ eq $value;
+        return $index->updateValue($i) if $_ eq $value;
         $i++;
     }
     return $index;
@@ -83,11 +102,11 @@ sub indexOf {
 sub lastIndexOf {
     my ($self,$value) = @_;
     die "undefined argument value" if !defined $value;
-    my $index = -1;
+    my $index = stdlib::integer->new(-1);
     my $i = 0;
     foreach(@{$self->{value}}) {
         if($_ eq $value) {
-            $index = $i;
+            $index->updateValue($i);
         }
         $i++;
     }
@@ -98,31 +117,35 @@ sub includes {
     my ($self,$value) = @_;
     die "undefined value" if !defined $value;
     foreach(@{$self->{value}}) {
-        return 1 if $_ eq $value;
+        return stdlib::boolean->new(1) if $_ eq $value;
     }
-    return 0;
+    return stdlib::boolean->new(0);
 }
 
 sub pop {
     my ($self) = @_;
+    die "Not possible to pop value from a freezed Array" if $self->{freezed}->valueOf() == 1;
     my $value = pop(@{$self->{value}});
     return $value;
 }
 
 sub shift {
     my ($self) = @_;
+    die "Not possible to shift value from a freezed Array" if $self->{freezed}->valueOf() == 1;
     my $value = shift(@{$self->{value}});
     return $value;
 }
 
 sub unshift {
     my ($self,@arr) = @_;
+    die "Not possible to unshift value(s) into an freezed Array" if $self->{freezed}->valueOf() == 1;
     unshift(@{$self->{value}},$_) for @arr;
     return $self;
 }
 
 sub reverse {
     my ($self) = @_;
+    die "Not possible to reverse a freezed Array" if $self->{freezed}->valueOf() == 1;
     my @reversedArray = reverse(@{$self->{value}});
     $self->{value} = \@reversedArray;
     return $self;
@@ -130,7 +153,7 @@ sub reverse {
 
 sub clone {
     my ($self) = @_;
-    return $self->slice(0,$self->size() - 1);
+    return $self->slice(0,$self->size->valueOf() - 1);
 }
 
 sub slice {
@@ -139,8 +162,10 @@ sub slice {
         $start = 0;
     }
     if(!defined $end) {
-        $end = $self->size() - 1;
+        $end = $self->size->valueOf() - 1;
     }
+    $start = ifStd($start,'stdlib::integer');
+    $end = ifStd($end,'stdlib::integer');
     my $newArray = stdlib::array->new(); 
     my $i = 0;
     foreach(@{$self->{value}}) {
@@ -156,24 +181,30 @@ sub slice {
 }
 
 sub splice {
-    my ($self,$index,$nbElements) = @_; 
+    my ($self,$index,$nbElements) = @_;
+    die "Not possible to splice value(s) from a freezed Array" if $self->{freezed}->valueOf() == 1; 
     die "index not defined" if !defined $index; 
     if(!defined $nbElements) {
         $nbElements = 1;
     }
+    $index = ifStd($index,'stdlib::integer');
+    $nbElements = ifStd($nbElements,'stdlib::integer');
     splice(@{$self->{value}},$index,$nbElements);
     return $self;
 }
 
 sub fill {
     my ($self,$value,$start,$end) = @_; 
-    die "undefined value" if !defined $value;
+    die "Undefined value for filling" if !defined $value;
+    die "Not possible to fill value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
     if(!defined $start) {
         $start = 0;
     }
     if(!defined $end) {
-        $end = $self->size() - 1;
+        $end = $self->size->valueOf() - 1;
     }
+    $start = ifStd($start,'stdlib::integer');
+    $end = ifStd($end,'stdlib::integer');
     my $i = 0;
     foreach(@{$self->{value}}) {
         if($i < $start) {
@@ -190,9 +221,8 @@ sub fill {
 sub find {
     my ($self,$fn) = @_;
     die "Undefined callback (fn) for find method!" if !defined $fn;
-    my $ref = ref($fn) || ref(\$fn);
-    return if $ref ne "CODE";
-    return if $self->size() == 0;
+    die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+    return undef if $self->size->valueOf() == 0;
     foreach(@{$self->{value}}) {
         return $_ if $fn->($_);
     }
@@ -202,23 +232,22 @@ sub find {
 sub findIndex {
     my ($self,$fn) = @_;
     die "Undefined callback (fn) for findIndex method!" if !defined $fn;
-    my $ref = ref($fn) || ref(\$fn);
-    return if $ref ne "CODE";
+    die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
     my $indexArr = stdlib::array->new;
-    my $i = 0;
+    my $i = stdlib::integer->new(0);
     foreach(@{$self->{value}}) {
         my $ret = $fn->($_);
         $indexArr->push($i) if $ret;
-        $i++;
+        $i->add;
     }
     return $indexArr;
 }
 
 sub sort {
     my ($self,$fn) = @_;
+    die "Not possible to sort value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
     die "Undefined callback (fn) for sort method!" if !defined $fn;
-    my $ref = ref($fn) || ref(\$fn);
-    return if $ref ne "CODE";
+    die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
     my @sortedArray = sort $fn @{$self->{value}};
     $self->{value} = \@sortedArray;
     return $self;
@@ -226,10 +255,10 @@ sub sort {
 
 sub reduce {
     my ($self,$fn,$initialValue) = @_;
+    die "Not possible to reduce value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
     die "Undefined callback (fn) for reduce method!" if !defined $fn;
-    my $ref = ref($fn) || ref(\$fn);
-    return if $ref ne "CODE";
-    return if $self->size() == 0;
+    die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+    die "Not possible to reduce with an empty Array" if $self->size->valueOf() == 0;
     if(!defined $initialValue) {
         $initialValue = $self->get(0);
     }
@@ -242,11 +271,11 @@ sub reduce {
 
 sub reduceRight {
     my ($self,$fn,$initialValue) = @_;
+    die "Not possible to reduceRight value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
     die "Undefined callback (fn) for reduceRight method!" if !defined $fn;
-    my $ref = ref($fn) || ref(\$fn);
-    return if $ref ne "CODE";
-    my $arrSize = $self->size();
-    return if $arrSize == 0;
+    die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+    my $arrSize = $self->size->valueOf;
+    die "Not possible to reduceRight with an empty Array" if $arrSize == 0;
     my $i = $arrSize - 1;
     if(!defined $initialValue) {
         $initialValue = $self->get($i);
@@ -261,21 +290,21 @@ sub reduceRight {
 
 sub some {
     my ($self,$fn) = @_;
+    die "Not possible to return some value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
     die "Undefined callback (fn) for map method!" if !defined $fn;
-    my $ref = ref($fn) || ref(\$fn);
-    return if $ref ne "CODE";
-    return if $self->size() == 0;
+    die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+    return stdlib::boolean->new(1) if $self->size->valueOf() == 0;
     foreach(@{$self->{value}}) {
-        return 1 if $fn->($_);
+        return stdlib::boolean->new(1) if $fn->($_);
     }
-    return 0;
+    return stdlib::boolean->new(0);
 }
 
 sub map {
     my ($self,$fn) = @_;
+    die "Not possible to map value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
     die "Undefined callback (fn) for map method!" if !defined $fn;
-    my $ref = ref($fn) || ref(\$fn);
-    return if $ref ne "CODE";
+    die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
     my $newArray = stdlib::array->new();
     foreach(@{$self->{value}}) {
         my $ret = $fn->($_);
@@ -287,26 +316,24 @@ sub map {
 sub every {
     my ($self,$fn) = @_;
     die "Undefined callback (fn) for every method!" if !defined $fn; 
-    my $ref = ref($fn) || ref(\$fn);
-    return if $ref ne "CODE";
-    my $i = 0;
+    die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+    my $i = stdlib::integer->new(0);
     foreach(@{$self->{value}}) {
         my $ret = $fn->($_,$i);
-        return 0 if !$ret;
-        $i++;
+        return stdlib::boolean->new(0) if !$ret;
+        $i->add;
     }
-    return 1;
+    return stdlib::boolean->new(1);
 }
 
 sub forEach {
     my ($self,$fn) = @_;
     die "Undefined callback (fn) for forEach method!" if !defined $fn; 
-    my $ref = ref($fn) || ref(\$fn);
-    return if $ref ne "CODE";
-    my $i = 0;
+    die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+    my $i = stdlib::integer->new(0);
     foreach(@{$self->{value}}) {
         $fn->($_,$i);
-        $i++;
+        $i->add;
     }
     return $self;
 }
@@ -317,10 +344,9 @@ sub toArray {
 }
 
 sub isArray {
-    my ($str) = @_; 
-    my $i = 0;
-    my $ref = ref($str) || ref(\$str);
-    return $ref eq 'stdlib::array' ? 1 : 0;
+    my ($element) = @_; 
+    my $ret = typeOf($element) eq $refName;
+    return std::boolean->new($ret);
 }
 
 1;
