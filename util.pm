@@ -10,8 +10,15 @@ require Exporter;
 @EXPORT = qw(
     typeOf 
     ifStd
+    TRUE
+    FALSE
 );
 no warnings 'recursion';
+
+use constant {
+    TRUE    => 1,
+    FALSE   => 0
+};
 
 sub AUTOLOAD {
 	no strict 'refs'; 
@@ -27,6 +34,7 @@ sub AUTOLOAD {
     *$sub = sub { $val };
     goto &$sub;
 }
+
 
 sub typeOf {
     my $element = shift;
