@@ -1,11 +1,16 @@
 package stdlib::regexp;
 use strict;
 use warnings;
+use stdlib::boolean;
+use stdlib::integer;
+use stdlib::util;
 require Exporter;
 use vars qw(@EXPORT @ISA);
 
 @ISA = qw(Exporter);
 @EXPORT = qw(isRegExp);
+
+my $refName = 'stdlib::regexp';
 
 sub new {
     my ($class,$strRegExp) = @_;

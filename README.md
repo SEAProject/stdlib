@@ -2,7 +2,8 @@
 
 Perl5 standard primitive libs. Created for SEALang project!
 
-# roadmap 
+# Roadmap  
 
-- Review array implementation!
-- Add first/last method to Array.
+- Make a documentation of all API
+- Work on regExp primitive! 
+- Make test.

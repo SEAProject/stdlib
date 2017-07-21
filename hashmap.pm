@@ -92,8 +92,8 @@ sub toHash {
 }
 
 sub isHashMap {
-    my ($str) = @_; 
-    my $ret = typeOf($str) eq $refName;
+    my ($element) = @_; 
+    my $ret = typeOf($element) eq $refName;
     return stdlib::boolean->new($ret);
 }
 
