@@ -2,28 +2,33 @@ package stdlib::hashmap;
 use strict;
 use warnings;
 use stdlib::array;
+use stdlib::util;
+use stdlib::boolean;
+use stdlib::integer;
 require Exporter;
 use vars qw(@EXPORT @ISA);
 
 @ISA = qw(Exporter);
 @EXPORT = qw(isHashMap);
 
+my $refName = 'stdlib::hashmap';
+
 sub new {
     my ($class,$hashRef) = @_;
     return bless({ 
-        freezed => 0,
+        freezed => stdlib::boolean->new(0),
         value => $hashRef || {}
     },ref($class) || $class);
 }
 
 sub size {
     my ($self) = @_;
-    return scalar $self->keys;
+    return stdlib::integer->new(scalar($self->keys()));
 }
 
 sub freeze {
     my ($self) = @_;
-    $self->{freezed} = 1;
+    $self->{freezed}->updateValue(1);
     return $self;
 }
 
@@ -35,8 +40,8 @@ sub clear {
 
 sub has {
     my ($self,$key) = @_; 
-    return 0 if !defined $key;
-    return defined $self->{value}->{$key} ? 1 : 0;
+    return stdlib::boolean->new(0) if !defined $key;
+    return stdlib::boolean->new(defined $self->{value}->{$key});
 }
 
 sub get {
@@ -46,13 +51,15 @@ sub get {
 
 sub set {
     my ($self,$key,$value) = @_;
-    return if !$self->has($key) && $self->{freezed};
+    die "Not possible to set a new key for a freezed HashMap" if $self->{freezed}->valueOf() == 1;
+    return if !$self->has($key);
     $self->{value}->{$key} = $value;
     return $self;
 }
 
 sub delete {
     my ($self,$key) = @_;
+    die "Not possible to delete a key for a freezed HashMap" if $self->{freezed}->valueOf() == 1;
     if($self->has($key)) {
         delete $self->{value}->{$key};
     }
@@ -62,8 +69,7 @@ sub delete {
 sub forEach {
     my ($self,$fn) = @_;
     die "Undefined callback (fn) for forEach method!" if !defined $fn; 
-    my $ref = ref($fn) || ref(\$fn);
-    return if $ref ne "CODE";
+    die "Not possible to forEach the HashMap without a valid callback reference!" if typeOf($fn) ne "CODE";
     while (my ($key, $value) = each %{$self->{value}}) {
         $fn->($key,$value);
     }
@@ -87,8 +93,8 @@ sub toHash {
 
 sub isHashMap {
     my ($str) = @_; 
-    my $ref = ref($str) || ref(\$str);
-    return $ref eq 'stdlib::hashmap' ? 1 : 0;
+    my $ret = typeOf($str) eq $refName;
+    return stdlib::boolean->new($ret);
 }
 
 1;
