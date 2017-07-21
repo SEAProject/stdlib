@@ -74,7 +74,6 @@ sub isEqual {
 
 sub substr {
     my ($self,$startPosition,$length) = @_;
-    die "Not possible to substring a freezed string" if $self->{freezed}->valueOf() == 1;
     if(!defined $startPosition) {
         $startPosition = 0;
     }
@@ -85,10 +84,21 @@ sub substr {
     return stdlib::string->new($str);
 }
 
+sub clone {
+    my ($self) = @_; 
+    my $len = stdlib::integer->new($self->length)->sub(1);
+    return $self->substr(0,$len);
+}
+
 sub slice {
     my ($self,$start,$end) = @_;
-    die "Not possible to slice a freezed string" if $self->{freezed}->valueOf() == 1;
-    return $self->substr( ifStd($start,"stdlib::integer") , ifStd($end,"stdlib::integer") );
+    return $self->substr( $start , $end );
+}
+
+sub last {
+    my ($self) = @_;
+    my $len = stdlib::integer->new($self->length)->sub(1);
+    return $self->substr($len);
 }
 
 sub charAt {
