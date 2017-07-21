@@ -60,6 +60,7 @@ sub updateValue {
         }
     };
     die $@ if $@;
+    return $self;
 }
 
 sub valueOf {
