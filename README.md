@@ -1,5 +1,6 @@
 # stdlib
-Perl5 standard primitive libs
+
+Perl5 standard primitive libs. Created for SEALang project!
 
 # roadmap 
 
