@@ -58,6 +58,12 @@ sub valueOf {
     return $self->{_value};
 }
 
+sub length {
+    my ($self) = @_;
+    my $lt = length($self->{_value});
+    return stdlib::integer->new($lt);
+}
+
 sub isEqual {
     my ($self,$value) = @_;
     return 0 if !defined $value;

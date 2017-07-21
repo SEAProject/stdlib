@@ -67,6 +67,12 @@ sub valueOf {
     return $self->{_value};
 }
 
+sub length {
+    my ($self) = @_;
+    my $lt = length($self->{_value});
+    return stdlib::integer->new($lt);
+}
+
 sub sub {
     my ($self,$int) = @_;
     die "Not possible to substract a freezed integer" if $self->{freezed}->valueOf() == 1;
