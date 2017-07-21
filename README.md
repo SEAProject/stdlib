@@ -1,6 +1,6 @@
 # stdlib
 
-Perl5 standard primitive libs. Created for SEALang project!
+Perl5 standard object-oriented primitives. Inspired by ECMAScript6 primitives methods. This project has been created for the SEALang project.
 
 # Roadmap  
 
