@@ -2,11 +2,14 @@ package stdlib::boolean;
 use strict;
 use warnings;
 use Scalar::Util qw(looks_like_number);
+use stdlib::util;
 require Exporter;
 use vars qw(@EXPORT @ISA);
 
 @ISA = qw(Exporter);
 @EXPORT = qw(isBoolean);
+
+our $refName = "stdlib::boolean";
 
 sub new {
     my ($class,$bool) = @_;
@@ -19,25 +22,8 @@ sub updateValue {
         $self->{_value} = 0;
     }
     else {
-        if($num == abs($bool)) {
-            $self->{_value} = 1;
-        }
-        else {
-            $self->{_value}= 0;
-        }
+        $self->{_value} = abs($bool) ? 1 : 0;
     }
-    return $self;
-}
-
-sub true {
-    my ($self) = @_;
-    $self->{_value} = 1;
-    return $self;
-}
-
-sub false {
-    my ($self) = @_;
-    $self->{_value} = 0;
     return $self;
 }
 
@@ -48,8 +34,8 @@ sub valueOf {
 
 sub isBoolean {
     my ($str) = @_; 
-    my $ref = ref($str) || ref(\$str);
-    return $ref eq 'stdlib::boolean' ? 1 : 0;
+    my $ret = typeOf($str) eq $refName;
+    return stdlib::boolean->new($ret);
 }
 
 1;
