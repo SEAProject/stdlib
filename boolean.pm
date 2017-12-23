@@ -18,6 +18,7 @@ sub new {
 
 sub updateValue {
     my ($self,$bool) = @_;
+    die "stdlib::boolean cannot be instancied or updated with an <UNDEFINED> value" if defined($bool) == 0;
     if(!defined $bool || !looks_like_number $bool) {
         $self->{_value} = 0;
     }

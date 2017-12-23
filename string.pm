@@ -33,24 +33,22 @@ sub freeze {
 
 sub updateValue {
     my ($self,$newValue) = @_;
+    die "stdlib::string cannot be instancied or updated with an <UNDEFINED> value" if defined($newValue) == 0;
     die "Cannot update string value when freezed" if $self->{freezed}->valueOf() == 1;
-    eval {
-        my $ref = typeOf($newValue);
-        if($ref eq "SCALAR") {
-            $self->{_value} = "$newValue";
-        }
-        elsif($ref eq "stdlib::integer") {
-            my $nV = $newValue->valueOf;
-            $self->{_value} = "$nV";
-        }
-        elsif($ref eq $refName) {
-            $self->{_value} = $newValue->valueOf;
-        }
-        else {
-            warn "Invalid string type!\n";
-        }
-    };
-    die $@ if $@;
+    my $ref = typeOf($newValue);
+    if($ref eq "SCALAR") {
+        $self->{_value} = "$newValue";
+    }
+    elsif($ref eq "stdlib::integer") {
+        my $nV = $newValue->valueOf;
+        $self->{_value} = "$nV";
+    }
+    elsif($ref eq $refName) {
+        $self->{_value} = $newValue->valueOf;
+    }
+    else {
+        die "InvalidType: Cannot cast typeof <$ref> into an <std::string> Object\n";
+    }
     return $self;
 }
 
@@ -66,14 +64,14 @@ sub length {
 }
 
 sub isEqual {
-    my ($self,$value) = @_;
+    my ($self, $value) = @_;
     return 0 if !defined $value;
-    $value = ifStd($value,$refName);
+    $value = ifStd($value, $refName);
     return $self->{_value} eq $value ? stdlib::boolean->new(1) : stdlib::boolean->new(0);
 }
 
 sub substr {
-    my ($self,$startPosition,$length) = @_;
+    my ($self, $startPosition, $length) = @_;
     if(!defined $startPosition) {
         $startPosition = 0;
     }
@@ -86,12 +84,11 @@ sub substr {
 
 sub clone {
     my ($self) = @_; 
-    my $len = stdlib::integer->new($self->length)->sub(1);
-    return $self->substr(0,$len);
+    return $self->substr(0, stdlib::integer->new($self->length)->sub(1));
 }
 
 sub slice {
-    my ($self,$start,$end) = @_;
+    my ($self, $start, $end) = @_;
     return $self->substr( $start , $end );
 }
 
@@ -102,20 +99,20 @@ sub last {
 }
 
 sub charAt {
-    my ($self,$index) = @_;
+    my ($self, $index) = @_;
     return undef if !defined $index; 
     return $self->substr( $index );
 }
 
 sub charCodeAt {
-    my ($self,$index) = @_;
+    my ($self, $index) = @_;
     return undef if !defined $index;
     my $charCode = ord( $self->charAt( $index )->valueOf() ); 
     return stdlib::integer->new( $charCode );
 }
 
 sub match {
-    my ($self,$pattern) = @_; 
+    my ($self, $pattern) = @_; 
     return 0 if !defined $pattern;
     my $ret = $self->{_value} =~ m/$pattern/;
     return stdlib::boolean->new($ret);
@@ -138,33 +135,33 @@ sub concat {
 }
 
 sub contains {
-    my ($self,$substring) = @_;
+    my ($self, $substring) = @_;
     return 0 if !defined $substring;
     my $ret = index($self->{_value}, ifStd($substring,$refName) ) != -1;
     return stdlib::boolean->new($ret);
 }
 
 sub containsRight {
-    my ($self,$substring) = @_;
+    my ($self, $substring) = @_;
     return 0 if !defined $substring;
-    my $ret = rindex($self->{_value}, ifStd($substring,$refName) ) != -1;
+    my $ret = rindex($self->{_value}, ifStd($substring, $refName) ) != -1;
     return stdlib::boolean->new($ret);
 }
 
 sub split {
-    my ($self,$splitCaracter) = @_; 
+    my ($self, $splitCaracter) = @_; 
     return if !defined $splitCaracter;
     $splitCaracter = ifStd($splitCaracter,$refName);
-    return stdlib::array->new(split($splitCaracter,$self->{_value}));
+    return stdlib::array->new( split($splitCaracter, $self->{_value}) );
 }
 
 sub repeat {
-    my ($self,$repeatCount) = @_;
+    my ($self, $repeatCount) = @_;
     die "Not possible to repeat a freezed string" if $self->{freezed}->valueOf() == 1;
     if(!defined $repeatCount) {
         $repeatCount = 1;
     }
-    $repeatCount = ifStd($repeatCount,"stdlib::integer");
+    $repeatCount = ifStd($repeatCount, "stdlib::integer");
     my $repeatedValue = $self->{_value};
     my $tValue = $self->{_value};
     while($repeatCount--) {
@@ -178,7 +175,7 @@ sub repeat {
 }
 
 sub replace {
-    my ($self,$originChar,$focusChar) = @_;
+    my ($self, $originChar, $focusChar) = @_;
     die "Not possible to replace carather in a freezed string" if $self->{freezed}->valueOf() == 1;
     return $self if !defined $originChar;
     if(!defined $focusChar) {

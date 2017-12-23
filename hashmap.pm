@@ -39,18 +39,18 @@ sub clear {
 }
 
 sub has {
-    my ($self,$key) = @_; 
+    my ($self, $key) = @_; 
     return stdlib::boolean->new(0) if !defined $key;
     return stdlib::boolean->new(defined $self->{value}->{$key});
 }
 
 sub get {
-    my ($self,$key) = @_; 
+    my ($self, $key) = @_; 
     return $self->has($key) ? $self->{value}->{$key} : undef;
 }
 
 sub set {
-    my ($self,$key,$value) = @_;
+    my ($self, $key, $value) = @_;
     die "Not possible to set a new key for a freezed HashMap" if $self->{freezed}->valueOf() == 1;
     return if !$self->has($key);
     $self->{value}->{$key} = $value;
@@ -58,7 +58,7 @@ sub set {
 }
 
 sub delete {
-    my ($self,$key) = @_;
+    my ($self, $key) = @_;
     die "Not possible to delete a key for a freezed HashMap" if $self->{freezed}->valueOf() == 1;
     if($self->has($key)) {
         delete $self->{value}->{$key};
@@ -67,7 +67,7 @@ sub delete {
 }
 
 sub forEach {
-    my ($self,$fn) = @_;
+    my ($self, $fn) = @_;
     die "Undefined callback (fn) for forEach method!" if !defined $fn; 
     die "Not possible to forEach the HashMap without a valid callback reference!" if typeOf($fn) ne "CODE";
     while (my ($key, $value) = each %{$self->{value}}) {

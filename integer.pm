@@ -15,14 +15,9 @@ our $directUpdate = stdlib::boolean->new(1);
 
 sub new {
     my ($class,$str) = @_;
-    my $blessed = bless({ 
+    return bless({ 
         freezed => stdlib::boolean->new(0)
-    },ref($class) || $class);
-    eval {
-        $blessed->updateValue($str);
-    };
-    die $@ if $@;
-    return $blessed;
+    },ref($class) || $class)->updateValue($str);
 }
 
 sub freeze {
@@ -32,40 +27,44 @@ sub freeze {
 
 sub updateValue {
     my ($self,$newValue) = @_;
+    die "stdlib::integer cannot be instancied or updated with an <UNDEFINED> value" if defined($newValue) == 0;
     die "Cannot update integer value when freezed" if $self->{freezed}->valueOf() == 1;
-    eval {
-        my $ref = typeOf $newValue;
-        if($ref eq "SCALAR") {
-            if(looks_like_number($newValue)) {
-                $self->{_value} = $newValue;
-            }
-            else {
-                warn "SCALAR Argument is not a integer\n";
-            }
-        }
-        elsif($ref eq "stdlib::string") {
-            $newValue = $newValue->valueOf();
-            if(looks_like_number($newValue)) {
-                $self->{_value} = $newValue;
-            }
-            else {
-                warn "stdlib::string Argument is not a integer\n";
-            }
-        }
-        elsif($ref eq $refName || $ref eq "stdlib::boolean") {
-            $self->{_value} = $newValue->valueOf;
+    my $ref = typeOf $newValue;
+    if($ref eq "SCALAR") {
+        if(looks_like_number($newValue)) {
+            $self->{_value} = $newValue;
         }
         else {
-            warn "Invalid integer type!\n";
+            die "InvalidType: Scalar value <'$newValue'> cannot be casted as a integer!\n";
         }
-    };
-    die $@ if $@;
+    }
+    elsif($ref eq "stdlib::string") {
+        $newValue = $newValue->valueOf();
+        $ref = typeOf $newValue;
+        if(looks_like_number($newValue)) {
+            $self->{_value} = $newValue;
+        }
+        else {
+            die "InvalidType: stdlib::string value <'$newValue'> cannot be casted as a integer!\n";
+        }
+    }
+    elsif($ref eq $refName || $ref eq "stdlib::boolean") {
+        $self->{_value} = $newValue->valueOf;
+    }
+    else {
+        die "InvalidType: Cannot cast typeof <$ref> into an <std::integer> Object\n";
+    }
     return $self;
 }
 
 sub valueOf {
+    my ($self, $castStr) = @_;
+    return $castStr == 1 ? "$self->{_value}" : $self->{_value};
+}
+
+sub toString {
     my ($self) = @_;
-    return $self->{_value};
+    return stdlib::string->new($self->{_value});
 }
 
 sub length {

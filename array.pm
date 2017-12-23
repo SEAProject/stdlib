@@ -41,7 +41,7 @@ sub size {
 }
 
 sub push {
-    my ($self,$value) = @_;
+    my ($self, $value) = @_;
     die "Not possible to push new value in a freezed Array" if $self->{freezed}->valueOf() == 1;
     die "Not possible to push undefined value!" if !defined $value;
     my $index = push(@{$self->{value}},$value);
@@ -49,13 +49,13 @@ sub push {
 }
 
 sub concat {
-    my ($self,@arr) = @_; 
+    my ($self, @arr) = @_; 
     $self->push($_) for @arr;
     return $self;
 }
 
 sub join {
-    my ($self,$separator) = @_; 
+    my ($self, $separator) = @_; 
     if(!defined $separator) {
         $separator = ',';
     }
@@ -88,7 +88,7 @@ sub last {
 }
 
 sub indexOf {
-    my ($self,$value) = @_;
+    my ($self, $value) = @_;
     die "undefined argument value" if !defined $value;
     my $index = stdlib::integer->new(-1);
     my $i = 0;
@@ -100,11 +100,11 @@ sub indexOf {
 }
 
 sub lastIndexOf {
-    my ($self,$value) = @_;
-    die "undefined argument value" if !defined $value;
+    my ($self, $value) = @_;
+    die "TypeError: Cannot execute lastIndexOf(\$value) with an UNDEFINED <\$value> argument!" if !defined $value;
     my $index = stdlib::integer->new(-1);
     my $i = 0;
-    foreach(@{$self->{value}}) {
+    foreach( @{$self->{value}} ) {
         if($_ eq $value) {
             $index->updateValue($i);
         }
@@ -114,9 +114,9 @@ sub lastIndexOf {
 }
 
 sub includes {
-    my ($self,$value) = @_;
-    die "undefined value" if !defined $value;
-    foreach(@{$self->{value}}) {
+    my ($self, $value) = @_;
+    die "TypeError: Cannot execute includes(\$value) with an UNDEFINED <\$value> argument!" if !defined $value;
+    foreach( @{$self->{value}} ) {
         return stdlib::boolean->new(1) if $_ eq $value;
     }
     return stdlib::boolean->new(0);
@@ -125,15 +125,13 @@ sub includes {
 sub pop {
     my ($self) = @_;
     die "Not possible to pop value from a freezed Array" if $self->{freezed}->valueOf() == 1;
-    my $value = pop(@{$self->{value}});
-    return $value;
+    return pop( @{$self->{value}} );
 }
 
 sub shift {
     my ($self) = @_;
     die "Not possible to shift value from a freezed Array" if $self->{freezed}->valueOf() == 1;
-    my $value = shift(@{$self->{value}});
-    return $value;
+    return shift( @{$self->{value}} );
 }
 
 sub unshift {
@@ -157,7 +155,7 @@ sub clone {
 }
 
 sub slice {
-    my ($self,$start,$end) = @_;
+    my ($self, $start, $end) = @_;
     if(!defined $start) {
         $start = 0;
     }
@@ -181,9 +179,10 @@ sub slice {
 }
 
 sub splice {
-    my ($self,$index,$nbElements) = @_;
+    my ($self, $index, $nbElements) = @_;
     die "Not possible to splice value(s) from a freezed Array" if $self->{freezed}->valueOf() == 1; 
-    die "index not defined" if !defined $index; 
+    die "TypeError: Cannot execute splice(\$index, \$nbElements) with an UNDEFINED <\$index> argument!" if !defined $index;
+
     if(!defined $nbElements) {
         $nbElements = 1;
     }
@@ -194,19 +193,20 @@ sub splice {
 }
 
 sub fill {
-    my ($self,$value,$start,$end) = @_; 
+    my ($self, $value, $start, $end) = @_; 
     die "Undefined value for filling" if !defined $value;
     die "Not possible to fill value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
+
     if(!defined $start) {
         $start = 0;
     }
     if(!defined $end) {
         $end = $self->size->valueOf() - 1;
     }
-    $start = ifStd($start,'stdlib::integer');
-    $end = ifStd($end,'stdlib::integer');
+    $start = ifStd($start, 'stdlib::integer');
+    $end = ifStd($end, 'stdlib::integer');
     my $i = 0;
-    foreach(@{$self->{value}}) {
+    foreach( @{$self->{value}} ) {
         if($i < $start) {
             $i++;
             next;
@@ -219,23 +219,25 @@ sub fill {
 }
 
 sub find {
-    my ($self,$fn) = @_;
-    die "Undefined callback (fn) for find method!" if !defined $fn;
-    die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+    my ($self, $fn) = @_;
+    die "TypeError: Cannot execute find(\$functionHandler) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
+    die "typeOf(FN) is not equal to <CODE>" if typeOf($fn) ne "CODE";
+
     return undef if $self->size->valueOf() == 0;
-    foreach(@{$self->{value}}) {
+    foreach( @{$self->{value}} ) {
         return $_ if $fn->($_);
     }
     return undef;
 }
 
 sub findIndex {
-    my ($self,$fn) = @_;
-    die "Undefined callback (fn) for findIndex method!" if !defined $fn;
+    my ($self, $fn) = @_;
+    die "TypeError: Cannot execute findIndex(\$functionHandler) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
     die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+
     my $indexArr = stdlib::array->new;
     my $i = stdlib::integer->new(0);
-    foreach(@{$self->{value}}) {
+    foreach( @{$self->{value}} ) {
         my $ret = $fn->($_);
         $indexArr->push($i) if $ret;
         $i->add;
@@ -244,21 +246,23 @@ sub findIndex {
 }
 
 sub sort {
-    my ($self,$fn) = @_;
+    my ($self, $fn) = @_;
     die "Not possible to sort value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
-    die "Undefined callback (fn) for sort method!" if !defined $fn;
+    die "TypeError: Cannot execute sort(\$functionHandler) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
     die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+
     my @sortedArray = sort $fn @{$self->{value}};
     $self->{value} = \@sortedArray;
     return $self;
 }
 
 sub reduce {
-    my ($self,$fn,$initialValue) = @_;
+    my ($self, $fn, $initialValue) = @_;
+    die "TypeError: Cannot execute reduce(\$functionHandler, \$initialValue) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
     die "Not possible to reduce value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
-    die "Undefined callback (fn) for reduce method!" if !defined $fn;
     die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
     die "Not possible to reduce with an empty Array" if $self->size->valueOf() == 0;
+
     if(!defined $initialValue) {
         $initialValue = $self->get(0);
     }
@@ -270,10 +274,11 @@ sub reduce {
 }
 
 sub reduceRight {
-    my ($self,$fn,$initialValue) = @_;
+    my ($self, $fn, $initialValue) = @_;
+    die "TypeError: Cannot execute reduceRight(\$functionHandler, \$initialValue) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
     die "Not possible to reduceRight value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
-    die "Undefined callback (fn) for reduceRight method!" if !defined $fn;
     die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+
     my $arrSize = $self->size->valueOf;
     die "Not possible to reduceRight with an empty Array" if $arrSize == 0;
     my $i = $arrSize - 1;
@@ -289,22 +294,24 @@ sub reduceRight {
 }
 
 sub some {
-    my ($self,$fn) = @_;
+    my ($self, $fn) = @_;
+    die "TypeError: Cannot execute some(\$functionHandler) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
     die "Not possible to return some value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
-    die "Undefined callback (fn) for map method!" if !defined $fn;
     die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+
     return stdlib::boolean->new(1) if $self->size->valueOf() == 0;
-    foreach(@{$self->{value}}) {
+    foreach( @{$self->{value}} ) {
         return stdlib::boolean->new(1) if $fn->($_);
     }
     return stdlib::boolean->new(0);
 }
 
 sub map {
-    my ($self,$fn) = @_;
+    my ($self, $fn) = @_;
     die "Not possible to map value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
-    die "Undefined callback (fn) for map method!" if !defined $fn;
+    die "TypeError: Cannot execute map(\$functionHandler) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
     die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+
     my $newArray = stdlib::array->new();
     foreach(@{$self->{value}}) {
         my $ret = $fn->($_);
@@ -314,9 +321,10 @@ sub map {
 }
 
 sub every {
-    my ($self,$fn) = @_;
-    die "Undefined callback (fn) for every method!" if !defined $fn; 
+    my ($self, $fn) = @_;
+    die "TypeError: Cannot execute every(\$functionHandler) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
     die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+
     my $i = stdlib::integer->new(0);
     foreach(@{$self->{value}}) {
         my $ret = $fn->($_,$i);
@@ -327,9 +335,10 @@ sub every {
 }
 
 sub forEach {
-    my ($self,$fn) = @_;
-    die "Undefined callback (fn) for forEach method!" if !defined $fn; 
+    my ($self, $fn) = @_;
+    die "TypeError: Cannot execute forEach(\$functionHandler) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
     die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
+
     my $i = stdlib::integer->new(0);
     foreach(@{$self->{value}}) {
         $fn->($_,$i);
