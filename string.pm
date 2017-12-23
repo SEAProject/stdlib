@@ -43,6 +43,10 @@ sub updateValue {
         my $nV = $newValue->valueOf;
         $self->{_value} = "$nV";
     }
+    elsif($ref eq "stdlib::boolean") {
+        my $nV = $newValue->valueOf;
+        $self->{_value} = $nV == 1 ? "TRUE" : "FALSE";
+    }
     elsif($ref eq $refName) {
         $self->{_value} = $newValue->valueOf;
     }
