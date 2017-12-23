@@ -33,6 +33,16 @@ sub valueOf {
     return $self->{_value};
 }
 
+sub true {
+    my ($self) = @_;
+    return $self->{_value} == 1 ? 1 : 0;
+}
+
+sub false {
+    my ($self) = @_;
+    return $self->{_value} == 0 ? 1 : 0;
+}
+
 sub isBoolean {
     my ($element) = @_; 
     my $ret = typeOf($element) eq $refName;
