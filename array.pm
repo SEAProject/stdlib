@@ -71,7 +71,7 @@ sub join {
 }
 
 sub get {
-    my ($self,$index) = @_;
+    my ($self, $index) = @_;
     die "undefined argument index" if !defined $index;
     $index = ifStd($index,'stdlib::integer');
     return $self->{value}[$index];
