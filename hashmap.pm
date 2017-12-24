@@ -32,6 +32,11 @@ sub freeze {
     return $self;
 }
 
+sub isFreezed() {
+    my ($self) = @_;
+    return $self->{freezed}->valueOf;
+}
+
 sub clear {
     my ($self) = @_;
     $self->{value} = {};
@@ -51,7 +56,8 @@ sub get {
 
 sub set {
     my ($self, $key, $value) = @_;
-    die "Not possible to set a new key for a freezed HashMap" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <HashMap.set()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     return if !$self->has($key);
     $self->{value}->{$key} = $value;
     return $self;
@@ -59,7 +65,8 @@ sub set {
 
 sub delete {
     my ($self, $key) = @_;
-    die "Not possible to delete a key for a freezed HashMap" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <HashMap.delete()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     if($self->has($key)) {
         delete $self->{value}->{$key};
     }
@@ -68,8 +75,9 @@ sub delete {
 
 sub forEach {
     my ($self, $fn) = @_;
-    die "Undefined callback (fn) for forEach method!" if !defined $fn; 
-    die "Not possible to forEach the HashMap without a valid callback reference!" if typeOf($fn) ne "CODE";
+    die "TypeError: Cannot execute forEach(\$fn) with an UNDEFINED <\$fn> argument!" if !defined $fn;
+    die "TypeError: FN Should be a reference of a Subroutine (EG: Callback)." if typeOf($fn) ne "CODE";
+
     while (my ($key, $value) = each %{$self->{value}}) {
         $fn->($key,$value);
     }
