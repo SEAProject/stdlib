@@ -91,7 +91,7 @@ sub first {
 
 sub last {
     my ($self) = @_;
-    return $self->get($self->size->valueOf() - 1);
+    return $self->get($self->size->sub(1));
 }
 
 sub indexOf {
