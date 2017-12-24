@@ -35,23 +35,15 @@ sub AUTOLOAD {
     goto &$sub;
 }
 
-
 sub typeOf {
     my $element = shift;
-    my $ref = ref($element) || ref(\$element);
-    return $ref;
+    return ref($element) || ref(\$element);
 }
 
 sub ifStd {
-    my ($element,$stdType) = @_;
-    die "undefined stdType" if !defined $stdType;
-    my $ref = typeOf($element); 
-    if($ref eq $stdType) {
-        return $element->valueOf;
-    }
-    else {
-        return $element;
-    }
+    my ($element, $stdType) = @_;
+    die "TypeError: Cannot execute ifStd(\$stdType) with an UNDEFINED <\$stdType> argument!" if !defined $stdType;
+    return typeOf($element) eq $stdType ? $element->valueOf : $element;
 }
 
 1;
