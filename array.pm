@@ -47,8 +47,9 @@ sub size {
 
 sub push {
     my ($self, $value) = @_;
-    die "Not possible to push new value in a freezed Array" if $self->{freezed}->valueOf() == 1;
-    die "Not possible to push undefined value!" if !defined $value;
+    die "Error: Cannot use the <Array.push()> method because the Object has been detected as freezed." if $self->isFreezed;
+    die "TypeError: Cannot execute push(\$value) with an UNDEFINED <\$value> argument!" if !defined $value;
+
     my $index = push(@{$self->{value}},$value);
     return stdlib::integer->new($index);
 }
@@ -77,7 +78,8 @@ sub join {
 
 sub get {
     my ($self, $index) = @_;
-    die "undefined argument index" if !defined $index;
+    die "TypeError: Cannot execute get(\$index) with an UNDEFINED <\$index> argument!" if !defined $index;
+
     $index = ifStd($index,'stdlib::integer');
     return $self->{value}[$index];
 }
@@ -94,7 +96,8 @@ sub last {
 
 sub indexOf {
     my ($self, $value) = @_;
-    die "undefined argument value" if !defined $value;
+    die "TypeError: Cannot execute indexOf(\$value) with an UNDEFINED <\$value> argument!" if !defined $value;
+
     my $index = stdlib::integer->new(-1);
     my $i = 0;
     foreach(@{$self->{value}}) {
@@ -107,6 +110,7 @@ sub indexOf {
 sub lastIndexOf {
     my ($self, $value) = @_;
     die "TypeError: Cannot execute lastIndexOf(\$value) with an UNDEFINED <\$value> argument!" if !defined $value;
+
     my $index = stdlib::integer->new(-1);
     my $i = 0;
     foreach( @{$self->{value}} ) {
@@ -121,6 +125,7 @@ sub lastIndexOf {
 sub includes {
     my ($self, $value) = @_;
     die "TypeError: Cannot execute includes(\$value) with an UNDEFINED <\$value> argument!" if !defined $value;
+
     foreach( @{$self->{value}} ) {
         return stdlib::boolean->new(1) if $_ eq $value;
     }
@@ -129,26 +134,30 @@ sub includes {
 
 sub pop {
     my ($self) = @_;
-    die "Not possible to pop value from a freezed Array" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <Array.pop()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     return pop( @{$self->{value}} );
 }
 
 sub shift {
     my ($self) = @_;
-    die "Not possible to shift value from a freezed Array" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <Array.shift()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     return shift( @{$self->{value}} );
 }
 
 sub unshift {
     my ($self,@arr) = @_;
-    die "Not possible to unshift value(s) into an freezed Array" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <Array.unshift()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     unshift(@{$self->{value}},$_) for @arr;
     return $self;
 }
 
 sub reverse {
     my ($self) = @_;
-    die "Not possible to reverse a freezed Array" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <Array.reverse()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     my @reversedArray = reverse(@{$self->{value}});
     $self->{value} = \@reversedArray;
     return $self;
@@ -185,7 +194,7 @@ sub slice {
 
 sub splice {
     my ($self, $index, $nbElements) = @_;
-    die "Not possible to splice value(s) from a freezed Array" if $self->{freezed}->valueOf() == 1; 
+    die "Error: Cannot use the <Array.splice()> method because the Object has been detected as freezed." if $self->isFreezed;
     die "TypeError: Cannot execute splice(\$index, \$nbElements) with an UNDEFINED <\$index> argument!" if !defined $index;
 
     if(!defined $nbElements) {
@@ -199,8 +208,8 @@ sub splice {
 
 sub fill {
     my ($self, $value, $start, $end) = @_; 
-    die "Undefined value for filling" if !defined $value;
-    die "Not possible to fill value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
+    die "Error: Cannot use the <Array.fill()> method because the Object has been detected as freezed." if $self->isFreezed;
+    die "TypeError: Cannot execute fill(\$value, \$start, \$end) with an UNDEFINED <\$value> argument!" if !defined $value;
 
     if(!defined $start) {
         $start = 0;
@@ -252,7 +261,7 @@ sub findIndex {
 
 sub sort {
     my ($self, $fn) = @_;
-    die "Not possible to sort value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
+    die "Error: Cannot use the <Array.sort()> method because the Object has been detected as freezed." if $self->isFreezed;
     die "TypeError: Cannot execute sort(\$functionHandler) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
     die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
 
@@ -264,9 +273,9 @@ sub sort {
 sub reduce {
     my ($self, $fn, $initialValue) = @_;
     die "TypeError: Cannot execute reduce(\$functionHandler, \$initialValue) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
-    die "Not possible to reduce value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
+    die "Error: Cannot use the <Array.reduce()> method because the Object has been detected as freezed." if $self->isFreezed;
     die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
-    die "Not possible to reduce with an empty Array" if $self->size->valueOf() == 0;
+    die "Error: Not possible to reduce an empty Array" if $self->size->valueOf() == 0;
 
     if(!defined $initialValue) {
         $initialValue = $self->get(0);
@@ -281,7 +290,7 @@ sub reduce {
 sub reduceRight {
     my ($self, $fn, $initialValue) = @_;
     die "TypeError: Cannot execute reduceRight(\$functionHandler, \$initialValue) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
-    die "Not possible to reduceRight value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
+    die "Error: Cannot use the <Array.reduceRight()> method because the Object has been detected as freezed." if $self->isFreezed;
     die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
 
     my $arrSize = $self->size->valueOf;
@@ -301,7 +310,7 @@ sub reduceRight {
 sub some {
     my ($self, $fn) = @_;
     die "TypeError: Cannot execute some(\$functionHandler) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
-    die "Not possible to return some value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
+    die "Error: Cannot use the <Array.some()> method because the Object has been detected as freezed." if $self->isFreezed;
     die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
 
     return stdlib::boolean->new(1) if $self->size->valueOf() == 0;
@@ -313,7 +322,7 @@ sub some {
 
 sub map {
     my ($self, $fn) = @_;
-    die "Not possible to map value(s) for a freezed Array" if $self->{freezed}->valueOf() == 1; 
+    die "Error: Cannot use the <Array.map()> method because the Object has been detected as freezed." if $self->isFreezed;
     die "TypeError: Cannot execute map(\$functionHandler) with an UNDEFINED <\$functionHandler> argument!" if !defined $fn;
     die "typeOf(FN) is not equal to code" if typeOf($fn) ne "CODE";
 
