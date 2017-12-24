@@ -28,7 +28,8 @@ sub new {
 
 sub freeze {
     my ($self) = @_;
-    $self->{freezed}->updateValue(0);
+    $self->{freezed}->updateValue(1);
+    return $self;
 }
 
 sub updateValue {
