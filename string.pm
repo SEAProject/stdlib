@@ -32,10 +32,15 @@ sub freeze {
     return $self;
 }
 
+sub isFreezed() {
+    my ($self) = @_;
+    return $self->{freezed}->valueOf;
+}
+
 sub updateValue {
     my ($self,$newValue) = @_;
     die "stdlib::string cannot be instancied or updated with an <UNDEFINED> value" if defined($newValue) == 0;
-    die "Cannot update string value when freezed" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot update a freezed String object!" if $self->isFreezed;
     my $ref = typeOf($newValue);
     if($ref eq "SCALAR") {
         $self->{_value} = "$newValue";
@@ -125,7 +130,8 @@ sub match {
 
 sub concat {
     my $self = shift;
-    die "Not possible to concat a freezed string" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <concat()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     my $tValue = $self->{_value};
     foreach(@_) {
         if(typeOf($_) eq "SCALAR") {
