@@ -35,6 +35,11 @@ sub freeze {
     return $self;
 }
 
+sub isFreezed() {
+    my ($self) = @_;
+    return $self->{freezed}->valueOf;
+}
+
 sub size {
     my ($self) = @_;
     return stdlib::integer->new(scalar @{$self->{value}});
