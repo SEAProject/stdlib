@@ -26,10 +26,16 @@ sub freeze {
     return $self;
 }
 
+sub isFreezed() {
+    my ($self) = @_;
+    return $self->{freezed}->valueOf;
+}
+
 sub updateValue {
     my ($self,$newValue) = @_;
     die "stdlib::integer cannot be instancied or updated with an <UNDEFINED> value" if defined($newValue) == 0;
-    die "Cannot update integer value when freezed" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot update a freezed Integer object!" if $self->isFreezed;
+
     my $ref = typeOf $newValue;
     if($ref eq "SCALAR") {
         if(looks_like_number($newValue)) {
@@ -70,13 +76,13 @@ sub toString {
 
 sub length {
     my ($self) = @_;
-    my $lt = length($self->{_value});
-    return stdlib::integer->new($lt);
+    return stdlib::integer->new( length($self->{_value}) );
 }
 
 sub sub {
     my ($self,$int) = @_;
-    die "Not possible to substract a freezed integer" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <Integer.sub()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     if(!defined $int) {
         $int = 1;
     }
@@ -94,7 +100,8 @@ sub sub {
 
 sub add {
     my ($self,$int) = @_;
-    die "Not possible to add a freezed integer" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <Integer.add()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     if(!defined $int) {
         $int = 1;
     }
@@ -112,7 +119,8 @@ sub add {
 
 sub mul {
     my ($self,$int) = @_;
-    die "Not possible to multiplicate a freezed integer" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <Integer.mul()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     if(!defined $int) {
         $int = 1;
     }
@@ -130,7 +138,8 @@ sub mul {
 
 sub div {
     my ($self,$int) = @_;
-    die "Not possible to divide a freezed integer" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <Integer.div()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     if(!defined $int) {
         $int = 1;
     }
