@@ -66,6 +66,9 @@ sub updateValue {
 
 sub valueOf {
     my ($self, $castStr) = @_;
+    if(!defined($castStr)) {
+        $castStr = 0;
+    }
     return $castStr == 1 ? "$self->{_value}" : $self->{_value};
 }
 
