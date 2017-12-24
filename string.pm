@@ -41,6 +41,7 @@ sub updateValue {
     my ($self,$newValue) = @_;
     die "stdlib::string cannot be instancied or updated with an <UNDEFINED> value" if defined($newValue) == 0;
     die "Error: Cannot update a freezed String object!" if $self->isFreezed;
+
     my $ref = typeOf($newValue);
     if($ref eq "SCALAR") {
         $self->{_value} = "$newValue";
@@ -130,7 +131,7 @@ sub match {
 
 sub concat {
     my $self = shift;
-    die "Error: Cannot use the <concat()> method because the Object has been detected as freezed." if $self->isFreezed;
+    die "Error: Cannot use the <String.concat()> method because the Object has been detected as freezed." if $self->isFreezed;
 
     my $tValue = $self->{_value};
     foreach(@_) {
@@ -168,7 +169,8 @@ sub split {
 
 sub repeat {
     my ($self, $repeatCount) = @_;
-    die "Not possible to repeat a freezed string" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <String.repeat()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     if(!defined $repeatCount) {
         $repeatCount = 1;
     }
@@ -187,7 +189,8 @@ sub repeat {
 
 sub replace {
     my ($self, $originChar, $focusChar) = @_;
-    die "Not possible to replace carather in a freezed string" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <String.replace()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     return $self if !defined $originChar;
     if(!defined $focusChar) {
         $focusChar = '';
@@ -205,7 +208,8 @@ sub replace {
 
 sub toLowerCase {
     my ($self) = @_;
-    die "Not possible to lowerCase a freezed string" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <String.toLowerCase()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     my $tValue = $self->{_value};
     $tValue = lc $tValue;
     if($directUpdate->valueOf() == 1) {
@@ -217,7 +221,8 @@ sub toLowerCase {
 
 sub toUpperCase {
     my ($self) = @_;
-    die "Not possible to upperCase a freezed string" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <String.toUpperCase()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     my $tValue = $self->{_value};
     $tValue = uc $tValue;
     if($directUpdate->valueOf() == 1) {
@@ -229,7 +234,8 @@ sub toUpperCase {
 
 sub trim {
     my ($self) = @_;
-    die "Not possible to trim a freezed string" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <String.trim()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     my $tValue = $self->{_value};
     $tValue =~ s/^\s+|\s+$//g;
     if($directUpdate->valueOf() == 1) {
@@ -241,7 +247,8 @@ sub trim {
 
 sub trimRight {
     my ($self) = @_;
-    die "Not possible to trimRight a freezed string" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <String.trimRight()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     my $tValue = $self->{_value};
     $tValue =~ s/\s+$//;
     if($directUpdate->valueOf() == 1) {
@@ -253,7 +260,8 @@ sub trimRight {
 
 sub trimLeft {
     my ($self) = @_;
-    die "Not possible to trimLeft a freezed string" if $self->{freezed}->valueOf() == 1;
+    die "Error: Cannot use the <String.trimLeft()> method because the Object has been detected as freezed." if $self->isFreezed;
+
     my $tValue = $self->{_value};
     $tValue =~ s/^\s+//;
     if($directUpdate->valueOf() == 1) {
